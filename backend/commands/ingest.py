@@ -29,14 +29,9 @@ def parse_crm_start(row):
     if not date_raw:
         return None
 
-    date_value = None
-    for fmt in ("%Y-%m-%d", "%m-%d/%Y"):
-        try:
-            date_value = datetime.strptime(date_raw, fmt).date()
-            break
-        except ValueError:
-            continue
-    if date_value is None:
+    try:
+        date_value = datetime.strptime(date_raw, "%Y-%m-%d").date()
+    except ValueError:
         return None
 
     if not time_raw:
