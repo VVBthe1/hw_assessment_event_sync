@@ -38,12 +38,27 @@ services:
         echo "Migration complete."
     restart: "no"
 
+  ingest:
+    build:
+      context: ./backend
+    container_name: event-sync-ingest
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER:-event_sync}:${MYSQL_PASSWORD:-event_sync}@mysql:3306/${MYSQL_DATABASE:-event_sync}
+    volumes:
+      - ./backend:/app
+      - ./data:/data:ro
+    command: python -m commands.ingest
+    restart: "no"
+
   backend:
     build:
       context: ./backend
     container_name: event-sync-backend
     depends_on:
-      migrate:
+      ingest:
         condition: service_completed_successfully
     environment:
       DATABASE_URL: mysql+pymysql://${MYSQL_USER:-event_sync}:${MYSQL_PASSWORD:-event_sync}@mysql:3306/${MYSQL_DATABASE:-event_sync}
