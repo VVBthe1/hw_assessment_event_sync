@@ -1,6 +1,6 @@
-# Local setup (Docker & Make)
+# Local setup (Docker Compose)
 
-Local stack is Compose-only. Makefile wraps the common Compose commands.
+Local stack is Compose-only.
 
 **Prerequisites:** Docker Desktop (or Engine + Compose v2).
 
@@ -9,10 +9,8 @@ Local stack is Compose-only. Makefile wraps the common Compose commands.
 ## Single command
 
 ```bash
-make up
+docker compose up --build
 ```
-
-Equivalent: `docker compose up --build`
 
 **Startup order:** `mysql` healthy → `migrate` succeeds → `ingest` succeeds → `backend` → `frontend`.
 
@@ -34,16 +32,16 @@ Open **http://localhost:5173** when frontend is up.
 
 ---
 
-## Make targets
+## Common commands
 
-| Target | Equivalent | Notes |
-|---|---|---|
-| `make up` | `docker compose up --build` | Full stack + ingest; Ctrl+C stops attached processes |
-| `make down` | `docker compose down` | Keeps MySQL volume |
-| `make ps` | `docker compose ps` | Container status |
-| `make logs` | `docker compose logs -f` | Follow all service logs |
-| `make migrate` | `docker compose run --rm migrate` | Re-apply schema (destructive) |
-| `make ingest` | `docker compose run --rm --no-deps backend python -m commands.ingest` | Re-load JSON without restarting the stack |
+| Command | Notes |
+|---|---|
+| `docker compose up --build` | Full stack + ingest; Ctrl+C stops attached processes |
+| `docker compose down` | Stop containers; keeps MySQL volume |
+| `docker compose ps` | Container status |
+| `docker compose logs -f` | Follow all service logs |
+| `docker compose run --rm migrate` | Re-apply schema (destructive) |
+| `docker compose run --rm --no-deps backend python -m commands.ingest` | Re-load JSON without restarting the stack |
 
 ---
 
@@ -65,7 +63,7 @@ Copy `.env.example` → `.env` only if you need to change defaults.
 ## Reset
 
 ```bash
-make migrate   # wipe + recreate tables
-make ingest    # reload JSON
-# or: docker compose down -v && make up
+docker compose run --rm migrate
+docker compose run --rm --no-deps backend python -m commands.ingest
+# or: docker compose down -v && docker compose up --build
 ```

@@ -3,6 +3,5 @@ __pycache__/
 *.pyc
 .env
 .DS_Store
-plan/
 node_modules/
 dist/
