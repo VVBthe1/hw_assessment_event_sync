@@ -5,7 +5,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from db import SessionLocal
-from models import MeetingStatus
+from models import Conflict, Meeting, MeetingStatus
 from services.conflicts import ConflictService
 from services.meetings import MeetingService
 
@@ -367,7 +367,9 @@ def main():
     conflicts = ConflictService(session)
 
     try:
-        meetings.clear()
+        session.query(Conflict).delete()
+        session.query(Meeting).delete()
+
         meeting_count = 0
         conflict_count = 0
 
