@@ -318,10 +318,11 @@ def build_meeting(crm, cal, duplicate_cals=None):
         )
 
     meeting = MeetingService.build(
+        title=title,
+        sources=sources,
+        status=status.value,
         crm_id=(crm or {}).get("crm_id"),
         event_id=event_id,
-        sources=sources,
-        title=title,
         client_name=(crm or {}).get("client_name"),
         client_company=(crm or {}).get("client_company"),
         relationship_owner=(crm or {}).get("relationship_owner"),
@@ -332,7 +333,6 @@ def build_meeting(crm, cal, duplicate_cals=None):
         meeting_type=(crm or {}).get("meeting_type"),
         location=location_decision["location"],
         is_recurring=(cal or {}).get("is_recurring") if cal else None,
-        status=status.value,
         notes=(crm or {}).get("notes"),
         description=(cal or {}).get("description"),
         created_at=created_at,
