@@ -378,8 +378,7 @@ def main():
             meeting_count += 1
             for conflict in conflict_rows:
                 conflict.meeting_id = meeting.id
-            conflicts.create_many(conflict_rows)
-            conflict_count += len(conflict_rows)
+            conflict_count += conflicts.create_many(conflict_rows)
 
         session.commit()
     except Exception as exc:

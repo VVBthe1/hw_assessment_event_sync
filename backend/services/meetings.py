@@ -1,37 +1,42 @@
-from models import Conflict, Meeting
+from datetime import datetime
+
+from sqlalchemy.orm import Session
+
+from models import Meeting
 
 
 class MeetingService:
-    def __init__(self, session):
+    def __init__(self, session: Session):
         self.session = session
 
     @staticmethod
     def build(
-        crm_id=None,
-        event_id=None,
-        sources=None,
-        title=None,
-        client_name=None,
-        client_company=None,
-        relationship_owner=None,
-        organizer=None,
-        attendees=None,
-        start_time=None,
-        end_time=None,
-        meeting_type=None,
-        location=None,
-        is_recurring=None,
-        status=None,
-        notes=None,
-        description=None,
-        created_at=None,
-        has_conflict=False,
-    ):
+        title: str,
+        sources: list[str],
+        status: str,
+        crm_id: str | None = None,
+        event_id: str | None = None,
+        client_name: str | None = None,
+        client_company: str | None = None,
+        relationship_owner: str | None = None,
+        organizer: str | None = None,
+        attendees: list[str] | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        meeting_type: str | None = None,
+        location: str | None = None,
+        is_recurring: bool | None = None,
+        notes: str | None = None,
+        description: str | None = None,
+        created_at: datetime | None = None,
+        has_conflict: bool = False,
+    ) -> Meeting:
         return Meeting(
+            title=title,
+            sources=sources,
+            status=status,
             crm_id=crm_id,
             event_id=event_id,
-            sources=sources or [],
-            title=title,
             client_name=client_name,
             client_company=client_company,
             relationship_owner=relationship_owner,
@@ -42,24 +47,29 @@ class MeetingService:
             meeting_type=meeting_type,
             location=location,
             is_recurring=is_recurring,
-            status=status,
             notes=notes,
             description=description,
             created_at=created_at,
             has_conflict=has_conflict,
         )
 
-    def create(self, meeting):
+    def create(self, meeting: Meeting) -> Meeting:
         self.session.add(meeting)
         self.session.flush()
         return meeting
 
-    def create_many(self, meetings):
-        self.session.add_all(meetings)
-        self.session.flush()
-        return meetings
+    def get(self, meeting_id: int) -> Meeting | None:
+        return self.session.query(Meeting).filter(Meeting.id == meeting_id).one_or_none()
 
-    def clear(self):
-        self.session.query(Conflict).delete()
-        self.session.query(Meeting).delete()
-        self.session.commit()
+    def list(
+        self, cursor: int | None = None, limit: int = 20
+    ) -> tuple[list[Meeting], int | None]:
+        query = self.session.query(Meeting).order_by(Meeting.id.asc())
+        if cursor is not None:
+            query = query.filter(Meeting.id > cursor)
+
+        rows = query.limit(limit + 1).all()
+        has_more = len(rows) > limit
+        items = rows[:limit]
+        next_cursor = items[-1].id if has_more else None
+        return items, next_cursor
